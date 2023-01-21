@@ -32,7 +32,7 @@ class CarsCollection {
         this.props = props;
     }
 
-    public joinCar = ({ modelId, ...car }: Car) => {
+    private joinCar = ({ modelId, ...car }: Car) => {
     const { brands, models } = this.props;
     const carModel = models.find((model) => model.id === modelId);
     const carBrand = brands.find((brand) => brand.id === carModel?.brandId);

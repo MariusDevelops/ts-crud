@@ -17,5 +17,6 @@ import App from './components/app';
 // 1.2.3. Gauti visas mašinas
 // console.log(carsCollection.all);
 
+// 1.3.3.
 const app = new App('#root');
 app.initialize();

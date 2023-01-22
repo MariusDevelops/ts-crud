@@ -15,6 +15,7 @@ type CarFormProps = {
   title: string,
   submitBtnText: string,
   onSubmit: (values: Values) => void,
+  isEdited: boolean,
 };
 
 type Fields = {
@@ -70,23 +71,6 @@ class CarForm {
     this.renderView();
   }
 
-  private initialize = (): void => {
-    this.htmlFormHeader.className = 'h3 text-center';
-
-    const fieldsArr = Object.values(this.fields);
-    this.htmlFieldsContainer.className = 'd-flex flex-column gap-2';
-    this.htmlFieldsContainer.append(...fieldsArr.map((field) => field.htmlElement));
-
-    this.htmlSubmitBtn.className = 'btn btn-primary';
-
-    this.htmlElement.className = 'card d-flex flex-column gap-3 p-3';
-    this.htmlElement.append(
-      this.htmlFormHeader,
-      this.htmlFieldsContainer,
-      this.htmlSubmitBtn,
-    );
-  };
-
   private handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
 
@@ -100,7 +84,6 @@ class CarForm {
     const year = formData.get('year') as string | null;
 
     if (!(brand && price && model && year)) {
-      // eslint-disable-next-line no-alert
       alert('blogi formos duomenys');
       return;
     }
@@ -115,8 +98,39 @@ class CarForm {
     onSubmit(formValues);
   };
 
+  private initialize = (): void => {
+    this.htmlFormHeader.className = 'h3 text-center';
+
+    const fieldsArr = Object.values(this.fields);
+    this.htmlFieldsContainer.className = 'd-flex flex-column gap-2';
+    this.htmlFieldsContainer.append(...fieldsArr.map((field) => field.htmlElement));
+
+    this.htmlSubmitBtn.className = 'btn btn-success';
+
+    this.htmlElement.className = 'card d-flex flex-column gap-3 p-3';
+    this.htmlElement.append(
+      this.htmlFormHeader,
+      this.htmlFieldsContainer,
+      this.htmlSubmitBtn,
+    );
+  };
+
   private renderView = (): void => {
-    const { title, values, submitBtnText } = this.props;
+    const {
+      title, values, submitBtnText, isEdited,
+    } = this.props;
+
+    if (isEdited) {
+      this.htmlElement.classList.add('border');
+      this.htmlElement.classList.add('border-warning');
+      this.htmlSubmitBtn.classList.add('btn-warning');
+      this.htmlSubmitBtn.classList.remove('btn-success');
+    } else {
+      this.htmlElement.classList.remove('border');
+      this.htmlElement.classList.remove('border-warning');
+      this.htmlSubmitBtn.classList.add('btn-success');
+      this.htmlSubmitBtn.classList.remove('btn-warning');
+    }
 
     this.htmlFormHeader.innerHTML = title;
 

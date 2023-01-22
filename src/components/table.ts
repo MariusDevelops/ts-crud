@@ -73,6 +73,7 @@ class Table<Type extends RowData> {
     const headersArray = Object.values(columns);
     const headersRowHtmlString = headersArray.map((header) => `<th>${header}</th>`).join('');
 
+    this.thead.className = 'border border-primary border-3';
     this.thead.innerHTML = `
       <tr>
         <th colspan="${headersArray.length}" class="text-center h3">${title}</th>
@@ -83,6 +84,8 @@ class Table<Type extends RowData> {
   private renderBodyView = (): void => {
     const { rowsData, columns, editedCarId } = this.props;
 
+    document.body.style.backgroundColor = '#bed8ff';
+    this.tbody.className = 'border border-primary border-3';
     this.tbody.innerHTML = '';
     const rowsHtmlElements = rowsData
       .map((rowData) => {

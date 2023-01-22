@@ -36,13 +36,13 @@ class App {
     this.carsCollection = new CarsCollection({ cars, brands, models });
 
     this.carTable = new Table({
-      title: 'Visi automobiliai',
+      title: 'All Cars for Sale',
       columns: {
         id: 'Id',
-        brand: 'Markė',
-        model: 'Modelis',
-        price: 'Kaina',
-        year: 'Metai',
+        brand: 'Brand',
+        model: 'Model',
+        price: 'Price',
+        year: 'Year',
       },
       rowsData: this.carsCollection.all.map(stringifyProps),
       onDelete: this.handleCarDelete,
@@ -51,9 +51,9 @@ class App {
     });
 
     this.brandSelect = new SelectField({
-      labelText: 'Markė',
+      labelText: 'Brand',
       options: [
-        { title: 'Visi automobiliai', value: '-1' },
+        { title: 'All Cars', value: '-1' },
         ...brands.map(({ id, title }) => ({ title, value: id })),
       ],
       onChange: this.handleBrandChange,
@@ -61,7 +61,7 @@ class App {
 
     const initialBrandId = brands[0].id;
     this.carForm = new CarForm({
-      title: 'Sukurkite naują automobilį',
+      title: 'Create<br>New Car',
       submitBtnText: 'Sukurti',
       values: {
         brand: initialBrandId,
@@ -112,12 +112,30 @@ class App {
     this.renderView();
   };
 
+  private handleUpdateCar = ({
+    brand, model, price, year,
+  }: Values): void => {
+    if (this.editedCarId) {
+      const carProps: CarProps = {
+        brandId: brand,
+        modelId: model,
+        price: Number(price),
+        year: Number(year),
+      };
+
+      this.carsCollection.update(this.editedCarId, carProps);
+      this.editedCarId = null;
+
+      this.renderView();
+    }
+  };
+
   private renderView = () => {
     const { selectedBrandId, carsCollection, editedCarId } = this;
 
     if (selectedBrandId === null) {
       this.carTable.updateProps({
-        title: 'Visi automobiliai',
+        title: 'All Cars',
         rowsData: carsCollection.all.map(stringifyProps),
         editedCarId,
       });
@@ -125,7 +143,57 @@ class App {
       const brand = brands.find((b) => b.id === selectedBrandId);
       if (brand === undefined) throw new Error('Pasirinkta neegzistuojanti markė');
 
-    public initialize = (): void => {
+      this.carTable.updateProps({
+        title: `${brand.title} Brand Cars`,
+        rowsData: carsCollection.getByBrandId(selectedBrandId).map(stringifyProps),
+        editedCarId,
+      });
+    }
+
+    if (editedCarId) {
+      const editedCar = cars.find((c) => c.id === editedCarId);
+      if (!editedCar) {
+        alert('Nėra rasta mašina kurią bandote redaguoti');
+        return;
+      }
+
+      const model = models.find((m) => m.id === editedCar.modelId);
+
+      if (!model) {
+        alert('Nėra rasta mašina kurią bandote redaguoti');
+        return;
+      }
+
+      this.carForm.updateProps({
+        title: 'Update Car',
+        submitBtnText: 'Update',
+        values: {
+          brand: model.brandId,
+          model: model.id,
+          price: String(editedCar.price),
+          year: String(editedCar.year),
+        },
+        isEdited: true,
+        onSubmit: this.handleUpdateCar,
+      });
+    } else {
+      const initialBrandId = brands[0].id;
+      this.carForm.updateProps({
+        title: 'Create<br>New Car',
+        submitBtnText: 'Create',
+        values: {
+          brand: initialBrandId,
+          model: models.filter((m) => m.brandId === initialBrandId)[0].id,
+          price: '',
+          year: '',
+        },
+        isEdited: false,
+        onSubmit: this.handleCreateCar,
+      });
+    }
+  };
+
+  public initialize = (): void => {
     const uxContainer = document.createElement('div');
     uxContainer.className = 'd-flex gap-4 align-items-start';
     uxContainer.append(

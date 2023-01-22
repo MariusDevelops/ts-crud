@@ -1,11 +1,3 @@
-// 2.1.1. Sukurkite komponentą SelectField, skirtą pasirinkti automobilių markei
-// Pirmiausiai įgalinkite atvaizdavimą, kuris rodytų bet kokius 3 pasirinkimus naudojant < select >
-// Išanalizuokite kokių parametrų reikia, kad suformuoti pasirinkimą? Kelis pasirinkimus?
-// Perduokite masyvą tokių pasirinkimų formuojat komponentą (konstruktoriui)
-// Naudojant konstruktoriaus parametrus priimkite funkciją,
-// kurią iškviesite pasikeitus < select > reikšmei
-// Panaudokite SelectField komponentą App klasėje ir prijunkite jį virš lentelės
-
 type OptionType = {
   title: string,
   value: string,
@@ -24,6 +16,8 @@ class SelectField {
 
   private htmlSelectElement: HTMLSelectElement;
 
+  private htmlLabelElement: HTMLLabelElement;
+
   public htmlElement: HTMLDivElement;
 
   constructor(props: SelectFieldProps) {
@@ -31,20 +25,49 @@ class SelectField {
 
     SelectField.uniqId += 1;
     this.htmlElement = document.createElement('div');
+    this.htmlSelectElement = document.createElement('select');
+    this.htmlLabelElement = document.createElement('label');
 
     this.initialize();
+    this.renderView();
   }
 
   private initialize = (): void => {
     const elementId = `select-${SelectField.uniqId}`;
+
+    this.htmlLabelElement.setAttribute('for', elementId);
 
     this.htmlSelectElement.className = 'form-select';
     this.htmlSelectElement.id = elementId;
 
     this.htmlElement.className = 'form-group';
     this.htmlElement.append(
+      this.htmlLabelElement,
       this.htmlSelectElement,
     );
+  };
+
+  private renderView = (): void => {
+    const { labelText, onChange } = this.props;
+
+    this.htmlLabelElement.innerHTML = labelText;
+    this.htmlSelectElement.addEventListener('change', () => onChange(this.htmlSelectElement.value));
+    this.renderSelectOptions();
+  };
+
+  private renderSelectOptions = (): void => {
+    const { options } = this.props;
+
+    const optionsHtmlElements = options.map((option) => {
+      const element = document.createElement('option');
+      element.innerHTML = option.title;
+      element.value = option.value;
+
+      return element;
+    });
+
+    this.htmlSelectElement.innerHTML = '';
+    this.htmlSelectElement.append(...optionsHtmlElements);
   };
 }
 

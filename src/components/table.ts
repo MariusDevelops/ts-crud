@@ -9,6 +9,7 @@ export type TableProps<Type> = {
   title: string,
   columns: Type,
   rowsData: Type[],
+  onDelete: (id: string) => void,
 };
 
 class Table<Type extends RowData> {
@@ -69,6 +70,7 @@ class Table<Type extends RowData> {
     const headersArray = Object.values(columns);
     const headersRowHtmlString = headersArray.map((header) => `<th>${header}</th>`).join('');
 
+    this.thead.className = 'border border-primary border-3';
     this.thead.innerHTML = `
       <tr>
         <th colspan="${headersArray.length}" class="text-center h3">${title}</th>
@@ -79,6 +81,8 @@ class Table<Type extends RowData> {
   private renderBodyView = (): void => {
     const { rowsData, columns } = this.props;
 
+    document.body.style.backgroundColor = '#bed8ff';
+    this.tbody.className = 'border border-primary border-3';
     this.tbody.innerHTML = '';
     const rowsHtmlElements = rowsData
       .map((rowData) => {
@@ -90,10 +94,29 @@ class Table<Type extends RowData> {
 
         rowHtmlElement.innerHTML = cellsHtmlString;
 
+        this.addActionsCell(rowHtmlElement, rowData.id);
+
         return rowHtmlElement;
       });
 
     this.tbody.append(...rowsHtmlElements);
+  };
+
+  private addActionsCell = (rowHtmlElement: HTMLTableRowElement, id: string): void => {
+    const { onDelete } = this.props;
+
+    const buttonCell = document.createElement('td');
+    buttonCell.style.backgroundColor = '#bed8ff';
+
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.innerHTML = '✕';
+    deleteButton.className = 'btn btn-danger';
+    deleteButton.addEventListener('click', () => onDelete(id));
+    deleteButton.style.width = '80px';
+
+    buttonCell.append(deleteButton);
+    rowHtmlElement.append(buttonCell);
   };
 
   public updateProps = (newProps: Partial<TableProps<Type>>): void => {

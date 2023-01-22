@@ -21,9 +21,13 @@ class App {
 
   private htmlElement: HTMLElement;
 
+  private editedCarId: string | null;
+
   public constructor(selector: string) {
     const foundElement = document.querySelector<HTMLElement>(selector);
     if (foundElement === null) throw new Error(`Nerastas elementas su selektoriumi '${selector}'`);
+
+    this.editedCarId = null;
 
     this.selectedBrandId = null;
 
@@ -32,22 +36,24 @@ class App {
     this.carsCollection = new CarsCollection({ cars, brands, models });
 
     this.carTable = new Table({
-      title: 'All Cars for Sale',
+      title: 'Visi automobiliai',
       columns: {
         id: 'Id',
-        brand: 'Brand',
-        model: 'Model',
-        price: 'Price',
-        year: 'Year',
+        brand: 'Markė',
+        model: 'Modelis',
+        price: 'Kaina',
+        year: 'Metai',
       },
       rowsData: this.carsCollection.all.map(stringifyProps),
       onDelete: this.handleCarDelete,
+      onEdit: this.handleCarEdit,
+      editedCarId: this.editedCarId,
     });
 
     this.brandSelect = new SelectField({
-      labelText: 'Brand',
+      labelText: 'Markė',
       options: [
-        { title: 'All Cars', value: '-1' },
+        { title: 'Visi automobiliai', value: '-1' },
         ...brands.map(({ id, title }) => ({ title, value: id })),
       ],
       onChange: this.handleBrandChange,
@@ -55,14 +61,15 @@ class App {
 
     const initialBrandId = brands[0].id;
     this.carForm = new CarForm({
-      title: 'Create<br>New Car',
-      submitBtnText: 'Create',
+      title: 'Sukurkite naują automobilį',
+      submitBtnText: 'Sukurti',
       values: {
         brand: initialBrandId,
         model: models.filter((m) => m.brandId === initialBrandId)[0].id,
         price: '0',
         year: '2000',
       },
+      isEdited: Boolean(this.editedCarId),
       onSubmit: this.handleCreateCar,
     });
   }
@@ -76,6 +83,16 @@ class App {
 
   private handleCarDelete = (carId: string) => {
     this.carsCollection.deleteCarById(carId);
+
+    this.renderView();
+  };
+
+  private handleCarEdit = (carId: string) => {
+    if (this.editedCarId === carId) {
+      this.editedCarId = null;
+    } else {
+      this.editedCarId = carId;
+    }
 
     this.renderView();
   };
@@ -96,25 +113,19 @@ class App {
   };
 
   private renderView = () => {
-    const { selectedBrandId, carsCollection } = this;
+    const { selectedBrandId, carsCollection, editedCarId } = this;
 
     if (selectedBrandId === null) {
       this.carTable.updateProps({
-        title: 'All Cars',
+        title: 'Visi automobiliai',
         rowsData: carsCollection.all.map(stringifyProps),
+        editedCarId,
       });
     } else {
       const brand = brands.find((b) => b.id === selectedBrandId);
-      if (brand === undefined) throw new Error('Pasirinkta neegzistuojanti Brand');
+      if (brand === undefined) throw new Error('Pasirinkta neegzistuojanti markė');
 
-      this.carTable.updateProps({
-        title: `${brand.title} Brand Cars`,
-        rowsData: carsCollection.getByBrandId(selectedBrandId).map(stringifyProps),
-      });
-    }
-  };
-
-  public initialize = (): void => {
+    public initialize = (): void => {
     const uxContainer = document.createElement('div');
     uxContainer.className = 'd-flex gap-4 align-items-start';
     uxContainer.append(
